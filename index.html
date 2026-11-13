@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#ff6600">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>MusicAll Player - Official API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        musicall: {
+                            orange: '#ff6600',
+                            darkorange: '#e55a00',
+                            dark: '#121212',
+                            darker: '#0a0a0a',
+                            card: '#1a1a1a',
+                            gray: '#282828',
+                            lightgray: '#b3b3b3'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-musicall-dark text-white font-sans h-screen flex flex-col overflow-hidden select-none">
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="flex flex-1 overflow-hidden">
+        <!-- BARRA LATERAL -->
+        <aside class="w-64 bg-musicall-darker flex flex-col p-6 hidden md:flex border-r border-musicall-gray/20">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-full bg-musicall-orange flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-musicall-orange/30">
+                    <i class="fa-solid fa-music"></i>
+                </div>
+                <span class="text-2xl font-black tracking-wider bg-gradient-to-r from-musicall-orange to-amber-500 bg-clip-text text-transparent">MusicAll</span>
+            </div>
+
+            <nav class="space-y-4 flex-1">
+                <a href="#" onclick="switchTab('home')" id="nav-home" class="flex items-center gap-4 text-musicall-orange font-semibold transition hover:text-white">
+                    <i class="fa-solid fa-house text-lg w-6"></i> Inicio
+                </a>
+                <a href="#" onclick="switchTab('search')" id="nav-search" class="flex items-center gap-4 text-musicall-lightgray font-medium transition hover:text-white">
+                    <i class="fa-solid fa-magnifying-glass text-lg w-6"></i> Buscar
+                </a>
+                <a href="#" onclick="switchTab('library')" id="nav-library" class="flex items-center gap-4 text-musicall-lightgray font-medium transition hover:text-white">
+                    <i class="fa-solid fa-book-open text-lg w-6"></i> Tu Biblioteca
+                </a>
+            </nav>
+
+            <div class="pt-4 border-t border-musicall-gray/40">
+                <div class="bg-musicall-card p-4 rounded-xl border border-musicall-gray/30">
+                    <p class="text-xs text-musicall-lightgray font-medium mb-1">API YouTube Conectada</p>
+                    <p class="text-xs text-emerald-400 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-circle text-[8px]"></i> Búsqueda Ilimitada</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTENIDO CENTRAL -->
+        <main class="flex-1 flex flex-col bg-gradient-to-b from-[#22120a] to-musicall-dark overflow-y-auto pb-32">
+            <!-- HEADER Y BUSCADOR -->
+            <header class="p-4 md:p-6 flex items-center justify-between sticky top-0 bg-musicall-dark/85 backdrop-blur-md z-10 border-b border-musicall-gray/10">
+                <div class="flex items-center gap-3 md:hidden">
+                    <div class="w-8 h-8 rounded-full bg-musicall-orange flex items-center justify-center text-white text-sm font-bold">
+                        <i class="fa-solid fa-music"></i>
+                    </div>
+                    <span class="text-xl font-bold bg-gradient-to-r from-musicall-orange to-amber-500 bg-clip-text text-transparent">MusicAll</span>
+                </div>
+                <div class="relative flex-1 max-w-xl mx-4">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-musicall-lightgray">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input type="text" id="searchInput" onkeypress="handleSearch(event)" placeholder="Busca cualquier artista, canción o álbum (Presiona Enter)..." class="w-full bg-musicall-card text-white text-sm rounded-full pl-10 pr-12 py-3 border border-musicall-gray/40 focus:outline-none focus:border-musicall-orange transition shadow-inner">
+                    <button onclick="triggerSearch()" class="absolute inset-y-0 right-0 px-4 text-musicall-orange hover:text-white transition">
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- VISTA INICIO -->
+            <div id="tab-home" class="p-4 md:p-8 space-y-6">
+                <div>
+                    <h2 class="text-2xl md:text-3xl font-bold mb-2 tracking-tight">Tendencias Globales</h2>
+                    <p class="text-musicall-lightgray text-sm">Explora los éxitos del momento</p>
+                </div>
+                <div id="trendingGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <!-- Se llena automáticamente -->
+                </div>
+            </div>
+
+            <!-- VISTA BUSCAR -->
+            <div id="tab-search" class="p-4 md:p-8 hidden space-y-6">
+                <h2 id="searchTitle" class="text-2xl font-bold">Resultados de búsqueda</h2>
+                <div id="searchResults" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <p class="text-musicall-lightgray col-span-full">Escribe lo que deseas escuchar en la barra superior y presiona Enter.</p>
+                </div>
+            </div>
+
+            <!-- VISTA BIBLIOTECA -->
+            <div id="tab-library" class="p-4 md:p-8 hidden space-y-6">
+                <h2 class="text-2xl font-bold">Tus Favoritos</h2>
+                <div id="favoritesList" class="space-y-2">
+                    <p class="text-musicall-lightgray">Aún no has agregado canciones a favoritos.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- REPRODUCTOR INFERIOR TIPO SPOTIFY -->
+    <footer class="h-24 bg-musicall-darker border-t border-musicall-gray/30 fixed bottom-0 left-0 right-0 px-4 flex items-center justify-between z-30 shadow-2xl">
+        <div class="flex items-center gap-3 w-1/4 min-w-[150px]">
+            <img id="currentThumb" src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=100&auto=format&fit=crop" class="w-14 h-14 rounded-md object-cover shadow-md" alt="Cover">
+            <div class="overflow-hidden">
+                <h4 id="currentTitle" class="text-sm font-bold truncate text-white">Selecciona una pista</h4>
+                <p id="currentArtist" class="text-xs text-musicall-lightgray truncate">MusicAll Stream</p>
+            </div>
+            <button onclick="toggleFavorite()" class="text-musicall-lightgray hover:text-musicall-orange ml-2 transition">
+                <i id="favIcon" class="fa-regular fa-heart text-lg"></i>
+            </button>
+        </div>
+
+        <div class="flex flex-col items-center max-w-xl w-2/4">
+            <div class="flex items-center gap-6 mb-1">
+                <button class="text-musicall-lightgray hover:text-white text-sm transition"><i class="fa-solid fa-shuffle"></i></button>
+                <button onclick="playPrev()" class="text-musicall-lightgray hover:text-white text-base transition"><i class="fa-solid fa-backward-step"></i></button>
+                <button onclick="togglePlayPause()" id="playPauseBtn" class="w-10 h-10 rounded-full bg-white text-musicall-dark flex items-center justify-center hover:scale-105 transition shadow-lg">
+                    <i id="playPauseIcon" class="fa-solid fa-play ml-0.5"></i>
+                </button>
+                <button onclick="playNext()" class="text-musicall-lightgray hover:text-white text-base transition"><i class="fa-solid fa-forward-step"></i></button>
+                <button class="text-musicall-lightgray hover:text-white text-sm transition"><i class="fa-solid fa-repeat"></i></button>
+            </div>
+            <div class="w-full flex items-center gap-3 text-xs text-musicall-lightgray">
+                <span id="currentTime">0:00</span>
+                <input type="range" id="progressBar" value="0" min="0" max="100" oninput="seekAudio(this.value)" class="w-full h-1 bg-musicall-gray rounded-lg appearance-none cursor-pointer accent-musicall-orange">
+                <span id="durationTime">0:00</span>
+            </div>
+        </div>
+
+        <div class="hidden md:flex items-center justify-end gap-3 w-1/4">
+            <i class="fa-solid fa-volume-high text-musicall-lightgray"></i>
+            <input type="range" min="0" max="100" value="80" oninput="changeVolume(this.value)" class="w-24 h-1 bg-musicall-gray rounded-lg appearance-none cursor-pointer accent-musicall-orange">
+        </div>
+    </footer>
+
+    <!-- CONTENEDOR OCULTO PARA REPRODUCTOR YOUTUBE IFRAME -->
+    <div id="youtube-player-container" class="hidden"></div>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+        // Clave de API de YouTube proporcionada
+        const YOUTUBE_API_KEY = "AIzaSyD5JuEWetGu6F9xfrSc6x5SyG9XkkYuxIY";
+
+        let player;
+        let isPlaying = false;
+        let progressInterval;
+        let currentTrack = null;
+        let currentPlaylist = [];
+
+        const defaultTracks = [
+            { id: "jfKfPfyJRdk", title: "Lofi Hip Hop Radio", artist: "Lofi Girl", thumb: "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300" },
+            { id: "5qap5aO4i9A", title: "Lofi Sleep Music", artist: "Chill Beats", thumb: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=300" },
+            { id: "4xDzrJKXOOY", title: "Synthwave Radio", artist: "Retro Beats", thumb: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=300" },
+            { id: "fJ9rUzIMcZQ", title: "Bohemian Rhapsody", artist: "Queen", thumb: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300" }
+        ];
+
+        let favorites = JSON.parse(localStorage.getItem('musicall_favs')) || [];
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('youtube-player-container', {
+                height: '0',
+                width: '0',
+                playerVars: { 'autoplay': 1, 'controls': 0 },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            currentPlaylist = defaultTracks;
+            renderGrid(defaultTracks, 'trendingGrid');
+            loadTrack(defaultTracks[0]);
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data == YT.PlayerState.PLAYING) {
+                isPlaying = true;
+                document.getElementById('playPauseIcon').className = "fa-solid fa-pause";
+                startProgressTracker();
+            } else if (event.data == YT.PlayerState.PAUSED || event.data == YT.PlayerState.ENDED) {
+                isPlaying = false;
+                document.getElementById('playPauseIcon').className = "fa-solid fa-play";
+                stopProgressTracker();
+                if(event.data == YT.PlayerState.ENDED) playNext();
+            }
+        }
+
+        function loadTrack(track) {
+            currentTrack = track;
+            document.getElementById('currentTitle').innerText = track.title;
+            document.getElementById('currentArtist').innerText = track.artist;
+            document.getElementById('currentThumb').src = track.thumb;
+
+            if (player && player.loadVideoById) {
+                player.loadVideoById(track.id);
+            }
+
+            setupMediaSession(track);
+            updateFavoriteIcon();
+        }
+
+        function togglePlayPause() {
+            if (!player) return;
+            if (isPlaying) {
+                player.pauseVideo();
+            } else {
+                player.playVideo();
+            }
+        }
+
+        function changeVolume(val) {
+            if (player && player.setVolume) player.setVolume(val);
+        }
+
+        function seekAudio(val) {
+            if (player && player.getDuration) {
+                const duration = player.getDuration();
+                player.seekTo((val / 100) * duration, true);
+            }
+        }
+
+        function startProgressTracker() {
+            stopProgressTracker();
+            progressInterval = setInterval(() => {
+                if (player && player.getCurrentTime && player.getDuration) {
+                    const current = player.getCurrentTime();
+                    const duration = player.getDuration();
+                    if(duration > 0) {
+                        document.getElementById('progressBar').value = (current / duration) * 100;
+                        document.getElementById('currentTime').innerText = formatTime(current);
+                        document.getElementById('durationTime').innerText = formatTime(duration);
+                    }
+                }
+            }, 1000);
+        }
+
+        function stopProgressTracker() { clearInterval(progressInterval); }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        function setupMediaSession(track) {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: track.title,
+                    artist: track.artist,
+                    album: 'MusicAll Stream',
+                    artwork: [{ src: track.thumb, sizes: '512x512', type: 'image/jpeg' }]
+                });
+                navigator.mediaSession.setActionHandler('play', () => togglePlayPause());
+                navigator.mediaSession.setActionHandler('pause', () => togglePlayPause());
+                navigator.mediaSession.setActionHandler('previoustrack', () => playPrev());
+                navigator.mediaSession.setActionHandler('nexttrack', () => playNext());
+            }
+        }
+
+        function renderGrid(tracks, elementId) {
+            const grid = document.getElementById(elementId);
+            if (tracks.length === 0) {
+                grid.innerHTML = `<p class="text-musicall-lightgray col-span-full">No se encontraron resultados.</p>`;
+                return;
+            }
+            grid.innerHTML = tracks.map((t, idx) => `
+                <div onclick='selectTrackFromPlaylist(${idx}, "${elementId}")' class="bg-musicall-card p-3 rounded-xl hover:bg-musicall-gray/40 transition cursor-pointer group shadow-lg border border-musicall-gray/20">
+                    <div class="relative mb-3 aspect-square overflow-hidden rounded-lg">
+                        <img src="${t.thumb}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        <button class="absolute bottom-2 right-2 w-10 h-10 bg-musicall-orange text-white rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover:opacity-100 transition transform translate-y-2 group-hover:translate-y-0">
+                            <i class="fa-solid fa-play ml-0.5"></i>
+                        </button>
+                    </div>
+                    <h3 class="font-bold text-sm truncate text-white">${t.title}</h3>
+                    <p class="text-xs text-musicall-lightgray truncate mt-1">${t.artist}</p>
+                </div>
+            `).join('');
+        }
+
+        function selectTrackFromPlaylist(index, gridId) {
+            if(gridId === 'searchResults') currentPlaylist = searchResultsCache;
+            else currentPlaylist = defaultTracks;
+            loadTrack(currentPlaylist[index]);
+        }
+
+        let searchResultsCache = [];
+
+        async function handleSearch(e) {
+            if (e.key === 'Enter') {
+                triggerSearch();
+            }
+        }
+
+        // Búsqueda oficial utilizando la YouTube Data API v3 con tu clave
+        async function triggerSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
+            switchTab('search');
+            document.getElementById('searchTitle').innerText = `Resultados para: "${query}"`;
+            const resultsGrid = document.getElementById('searchResults');
+            resultsGrid.innerHTML = `<p class="text-musicall-lightgray col-span-full"><i class="fa-solid fa-spinner fa-spin"></i> Buscando en YouTube...</p>`;
+
+            try {
+                const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=16&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error.message);
+                }
+
+                searchResultsCache = data.items.map(item => ({
+                    id: item.id.videoId,
+                    title: item.snippet.title,
+                    artist: item.snippet.channelTitle,
+                    thumb: item.snippet.thumbnails.high ? item.snippet.thumbnails.high.url : item.snippet.thumbnails.default.url
+                }));
+
+                currentPlaylist = searchResultsCache;
+                renderGrid(searchResultsCache, 'searchResults');
+            } catch (error) {
+                console.error("Error en la API de YouTube:", error);
+                resultsGrid.innerHTML = `<p class="text-red-400 col-span-full">Error al buscar: ${error.message}. Verifica que tu clave API tenga habilitada la "YouTube Data API v3".</p>`;
+            }
+        }
+
+        function switchTab(tabName) {
+            ['home', 'search', 'library'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`nav-${t}`).className = "flex items-center gap-4 text-musicall-lightgray font-medium transition hover:text-white";
+            });
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            document.getElementById(`nav-${tabName}`).className = "flex items-center gap-4 text-musicall-orange font-semibold transition hover:text-white";
+            if(tabName === 'library') renderFavorites();
+        }
+
+        function toggleFavorite() {
+            if (!currentTrack) return;
+            const index = favorites.findIndex(f => f.id === currentTrack.id);
+            if (index > -1) favorites.splice(index, 1);
+            else favorites.push(currentTrack);
+            localStorage.setItem('musicall_favs', JSON.stringify(favorites));
+            updateFavoriteIcon();
+        }
+
+        function updateFavoriteIcon() {
+            if (!currentTrack) return;
+            const isFav = favorites.some(f => f.id === currentTrack.id);
+            document.getElementById('favIcon').className = isFav ? "fa-solid fa-heart text-musicall-orange text-lg" : "fa-regular fa-heart text-lg";
+        }
+
+        function renderFavorites() {
+            const list = document.getElementById('favoritesList');
+            if (favorites.length === 0) {
+                list.innerHTML = `<p class="text-musicall-lightgray">Aún no has agregado canciones a favoritos.</p>`;
+                return;
+            }
+            list.innerHTML = favorites.map(t => `
+                <div onclick='loadTrack(${JSON.stringify(t)})' class="flex items-center justify-between p-3 bg-musicall-card rounded-lg hover:bg-musicall-gray/30 cursor-pointer transition">
+                    <div class="flex items-center gap-3">
+                        <img src="${t.thumb}" class="w-12 h-12 rounded object-cover">
+                        <div>
+                            <h4 class="font-bold text-sm text-white">${t.title}</h4>
+                            <p class="text-xs text-musicall-lightgray">${t.artist}</p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-play text-musicall-orange"></i>
+                </div>
+            `).join('');
+        }
+
+        function playNext() {
+            if(!currentTrack || currentPlaylist.length === 0) return;
+            const currentIndex = currentPlaylist.findIndex(t => t.id === currentTrack.id);
+            const nextIndex = (currentIndex + 1) % currentPlaylist.length;
+            loadTrack(currentPlaylist[nextIndex]);
+        }
+
+        function playPrev() {
+            if(!currentTrack || currentPlaylist.length === 0) return;
+            const currentIndex = currentPlaylist.findIndex(t => t.id === currentTrack.id);
+            const prevIndex = (currentIndex - 1 + currentPlaylist.length) % currentPlaylist.length;
+            loadTrack(currentPlaylist[prevIndex]);
+        }
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
+        }
+    </script>
+</body>
+</html>
