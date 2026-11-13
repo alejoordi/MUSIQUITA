@@ -9,7 +9,7 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>MusicAll Player - Official API</title>
+    <title>MusicAll Player - Ad-Free Experience</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -60,8 +60,8 @@
 
             <div class="pt-4 border-t border-musicall-gray/40">
                 <div class="bg-musicall-card p-4 rounded-xl border border-musicall-gray/30">
-                    <p class="text-xs text-musicall-lightgray font-medium mb-1">API YouTube Conectada</p>
-                    <p class="text-xs text-emerald-400 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-circle text-[8px]"></i> Búsqueda Ilimitada</p>
+                    <p class="text-xs text-musicall-lightgray font-medium mb-1">Modo Audio Puro</p>
+                    <p class="text-xs text-emerald-400 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-circle text-[8px]"></i> Sin Anuncios Activos</p>
                 </div>
             </div>
         </aside>
@@ -91,7 +91,7 @@
             <div id="tab-home" class="p-4 md:p-8 space-y-6">
                 <div>
                     <h2 class="text-2xl md:text-3xl font-bold mb-2 tracking-tight">Tendencias Globales</h2>
-                    <p class="text-musicall-lightgray text-sm">Explora los éxitos del momento</p>
+                    <p class="text-musicall-lightgray text-sm">Explora los éxitos del momento sin propagandas</p>
                 </div>
                 <div id="trendingGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                     <!-- Se llena automáticamente -->
@@ -157,7 +157,6 @@
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
-        // Clave de API de YouTube proporcionada
         const YOUTUBE_API_KEY = "AIzaSyD5JuEWetGu6F9xfrSc6x5SyG9XkkYuxIY";
 
         let player;
@@ -179,7 +178,15 @@
             player = new YT.Player('youtube-player-container', {
                 height: '0',
                 width: '0',
-                playerVars: { 'autoplay': 1, 'controls': 0 },
+                playerVars: { 
+                    'autoplay': 1, 
+                    'controls': 0,
+                    'disablekb': 1,
+                    'fs': 0,
+                    'iv_load_policy': 3,
+                    'modestbranding': 1,
+                    'rel': 0
+                },
                 events: {
                     'onReady': onPlayerReady,
                     'onStateChange': onPlayerStateChange
@@ -222,11 +229,8 @@
 
         function togglePlayPause() {
             if (!player) return;
-            if (isPlaying) {
-                player.pauseVideo();
-            } else {
-                player.playVideo();
-            }
+            if (isPlaying) player.pauseVideo();
+            else player.playVideo();
         }
 
         function changeVolume(val) {
@@ -307,12 +311,9 @@
         let searchResultsCache = [];
 
         async function handleSearch(e) {
-            if (e.key === 'Enter') {
-                triggerSearch();
-            }
+            if (e.key === 'Enter') triggerSearch();
         }
 
-        // Búsqueda oficial utilizando la YouTube Data API v3 con tu clave
         async function triggerSearch() {
             const query = document.getElementById('searchInput').value.trim();
             if (!query) return;
@@ -327,9 +328,7 @@
                 const response = await fetch(url);
                 const data = await response.json();
 
-                if (data.error) {
-                    throw new Error(data.error.message);
-                }
+                if (data.error) throw new Error(data.error.message);
 
                 searchResultsCache = data.items.map(item => ({
                     id: item.id.videoId,
@@ -342,7 +341,7 @@
                 renderGrid(searchResultsCache, 'searchResults');
             } catch (error) {
                 console.error("Error en la API de YouTube:", error);
-                resultsGrid.innerHTML = `<p class="text-red-400 col-span-full">Error al buscar: ${error.message}. Verifica que tu clave API tenga habilitada la "YouTube Data API v3".</p>`;
+                resultsGrid.innerHTML = `<p class="text-red-400 col-span-full">Error al buscar: ${error.message}.</p>`;
             }
         }
 
